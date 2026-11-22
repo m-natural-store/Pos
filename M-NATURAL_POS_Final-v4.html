@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="M-NATURAL">
+<title>M-NATURAL • Complete Store POS</title>
+<style>
+  :root {
+    --primary: #0f6b4e;
+    --primary-dark: #094a35;
+    --primary-light: #e6f4ef;
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --text: #1a202c;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --danger: #dc2626;
+    --danger-bg: #fee2e2;
+    --amber: #d97706;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: calc(95px + env(safe-area-inset-bottom));
+  }
+  div[style*="tiiny"], a[href*="tiiny.host"], iframe[src*="tiiny"], [id*="tiiny"], [class*="tiiny"] {
+    display: none !important;
+  }
+  .header {
+    background: var(--primary);
+    color: #fff;
+    padding: 14px 16px;
+    padding-top: max(18px, env(safe-area-inset-top));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    gap: 8px;
+  }
+  .header-left { flex: 1; min-width: 0; }
+  .header h1 { font-size: 19px; font-weight: 800; letter-spacing: 0.5px; }
+  .header p { font-size: 11px; opacity: 0.92; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .date-badge {
+    background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .container { padding: 12px; max-width: 540px; margin: 0 auto; }
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .search-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .search-box {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+  }
+  .search-box:focus { border-color: var(--primary); }
+  .btn-scan {
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .tabs-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; }
+  .cat-pill {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .cat-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .items-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    max-height: 270px;
+    overflow-y: auto;
+  }
+  .item-btn {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: left;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+  }
+  .item-btn:active { background: var(--primary-light); border-color: var(--primary); }
+  .item-btn.low-stock { border-color: #fca5a5; background: #fffafa; }
+  .item-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.25; }
+  .item-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 10px; }
+  .stock-tag { padding: 2px 6px; border-radius: 6px; font-weight: 700; background: #f1f5f9; color: #475569; }
+  .stock-tag.low { background: var(--danger-bg); color: var(--danger); }
+  .item-price { font-size: 13px; font-weight: 800; color: var(--primary); margin-top: 4px; }
+  .custom-row { display: flex; gap: 8px; }
+  .custom-row input { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; }
+  .btn-add { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 0 16px; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .bill-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; gap: 6px; }
+  .total-box {
+    border: 2px solid var(--primary);
+    background: var(--primary-light);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+  }
+  .total-box span:first-child { font-size: 13px; font-weight: 800; color: var(--primary); }
+  .total-box span:last-child { font-size: 22px; font-weight: 900; color: var(--primary); }
+  .action-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .action-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .btn { padding: 11px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; text-align: center; }
+  .btn:active { opacity: 0.85; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text); }
+  .btn-green { background: #16a34a; color: #fff; }
+  .btn-amber { background: #d97706; color: #fff; }
+  .btn-danger { background: var(--danger-bg); color: var(--danger); }
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 4px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 9999;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+  }
+  .nav-item {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 5px 4px;
+    border-radius: 10px;
+    flex: 1;
+  }
+  .nav-item.active { color: var(--primary); background: var(--primary-light); font-weight: 800; }
+  .nav-icon { font-size: 18px; margin-bottom: 2px; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.68);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal.open { display: flex; }
+  .modal-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .weight-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .stat-box { background: var(--primary-light); padding: 11px; border-radius: 12px; }
+  .stat-box.profit { background: #fef3c7; }
+  .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .stat-val { font-size: 18px; font-weight: 800; color: var(--primary); margin-top: 3px; }
+  .stat-box.profit .stat-val { color: #b45309; }
+  .tx-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #fafafa;
+  }
+  .tx-head { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .tx-items { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .badge-mode { padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+  .badge-Cash { background: #dcfce7; color: #166534; }
+  .badge-UPI { background: #fef3c7; color: #92400e; }
+  .badge-Udhar { background: #fee2e2; color: #991b1b; }
+  .badge-Return { background: #e0e7ff; color: #3730a3; }
+  .stock-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    gap: 8px;
+  }
+  .mini-btn {
+    padding: 5px 9px;
+    border-radius: 8px;
+    border: 1px solid var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .rate-input-inline {
+    width: 65px;
+    padding: 5px 6px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-weight: 700;
+    text-align: right;
+    font-size: 12px;
+  }
+  video#scannerVideo {
+    width: 100%;
+    max-height: 240px;
+    border-radius: 12px;
+    background: #000;
+    object-fit: cover;
+    margin: 10px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>M-NATURAL</h1>
+    <p id="headerSubtitle">Mehboob Store • New Seelampur, Delhi</p>
+  </div>
+  <div class="date-badge" id="todayDate">-- --- ----</div>
+</div>
+
+<div class="container">
+  <!-- PAGE 1: BILL & QR -->
+  <div id="page-bill" class="page active">
+    <div class="card">
+      <div class="card-title">
+        <span>Items (<span id="itemCountBadge">0</span>)</span>
+        <span style="font-size:11px;color:var(--muted)">Tap item • Auto Stock</span>
+      </div>
+      <div class="search-row">
+        <input type="text" class="search-box" style="margin-bottom:0" id="searchInput" placeholder="Search Dal, Rice, Oil, Packet, Barcode..." oninput="renderItems()">
+        <button class="btn-scan" onclick="openScanner('bill')">📷 Scan</button>
+      </div>
+      <div class="tabs-row" id="catTabs"></div>
+      <div class="items-grid" id="itemsGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>Direct Custom Amount (₹)</span>
+        <label style="font-size:11px;color:var(--danger);font-weight:700;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" id="returnModeCheck"> Return / Refund
+        </label>
+      </div>
+      <div class="custom-row">
+        <input type="number" id="customAmt" placeholder="Enter ₹ amount...">
+        <button class="btn-add" onclick="addCustomAmt()">+ Add</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>Customer Bill</span>
+        <button onclick="clearBill()" style="background:#fee2e2;color:#b91c1c;border:none;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:700;">Clear</button>
+      </div>
+      <div id="billList"><p style="text-align:center;color:var(--muted);font-size:13px;padding:10px 0;">No items added yet</p></div>
+      <div class="total-box">
+        <span>TOTAL PAYABLE</span>
+        <span id="grandTotal">₹0</span>
+      </div>
+      <div class="action-grid-2">
+        <button class="btn btn-primary" onclick="openQRModal()">Show Fixed QR</button>
+        <button class="btn btn-outline" onclick="shareWhatsApp()">WhatsApp Receipt</button>
+      </div>
+      <div class="action-grid-3">
+        <button class="btn btn-green" onclick="saveSale('Cash')">Save Cash</button>
+        <button class="btn btn-amber" onclick="saveSale('UPI')">Save UPI</button>
+        <button class="btn btn-outline" onclick="openUdharModal()">+ Udhar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: STOCK -->
+  <div id="page-stock" class="page">
+    <div class="card">
+      <div class="card-title">
+        <span>Shop Stock & Alerts</span>
+        <span id="lowStockBadge" style="background:var(--danger-bg);color:var(--danger);padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700;">0 Low</span>
+      </div>
+      <div class="tabs-row">
+        <button class="cat-pill active" id="stkFilterAll" onclick="setStockFilter('all')">All Stock</button>
+        <button class="cat-pill" id="stkFilterLow" onclick="setStockFilter('low')">⚠️ Low / Out of Stock</button>
+      </div>
+      <input type="text" class="search-box" id="stockSearchInput" placeholder="Search item to add stock..." oninput="renderStock()">
+      <div id="stockListDisplay"></div>
+    </div>
+  </div>
+
+  <!-- PAGE 3: HISAB & PROFIT -->
+  <div id="page-hisab" class="page">
+    <div class="card">
+      <div class="card-title">
+        <span>Hisab & Profit (<span id="hisabDateLabel"></span>)</span>
+        <button onclick="shareHisabWhatsApp()" style="background:#dcfce7;color:#166534;border:none;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;">WA Report</button>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-label">Total Sales</div><div class="stat-val" id="statTotal">₹0</div></div>
+        <div class="stat-box profit"><div class="stat-label">Net Profit (Munaafa)</div><div class="stat-val" id="statProfit">₹0</div></div>
+        <div class="stat-box"><div class="stat-label">Cash Sale</div><div class="stat-val" id="statCash">₹0</div></div>
+        <div class="stat-box"><div class="stat-label">UPI Received</div><div class="stat-val" id="statUpi">₹0</div></div>
+      </div>
+      <div class="card-title"><span>Bill History (With Item Details)</span></div>
+      <div id="txLog"></div>
+    </div>
+  </div>
+
+  <!-- PAGE 4: UDHAR -->
+  <div id="page-udhar" class="page">
+    <div class="card">
+      <div class="card-title">
+        <span>Udhar Khata</span>
+        <span id="totalUdharTop" style="font-size:13px;font-weight:800;color:var(--danger);">Total: ₹0</span>
+      </div>
+      <div id="udharList"><p style="color:var(--muted);font-size:13px;">No pending udhar records.</p></div>
+    </div>
+  </div>
+
+  <!-- PAGE 5: RATES & ADD ITEM -->
+  <div id="page-rates" class="page">
+    <div class="card">
+      <div class="card-title">
+        <span>Add New Product / Packet</span>
+        <button class="mini-btn" onclick="openScanner('new')">📷 Scan Barcode/QR</button>
+      </div>
+      <input type="text" id="newItemName" class="search-box" placeholder="Item Name (e.g. M-Natural Raisins 250g)">
+      <div class="action-grid-2" style="margin-bottom:10px;">
+        <select id="newItemUnit" class="search-box" style="margin-bottom:0">
+          <option value="kg">Loose by Weight (kg/g)</option>
+          <option value="pkt">Packet / Piece (Pcs)</option>
+        </select>
+        <input type="text" id="newItemCat" class="search-box" style="margin-bottom:0" placeholder="Category (e.g. Packets)">
+      </div>
+      <div class="action-grid-2" style="margin-bottom:10px;">
+        <input type="number" id="newItemCost" class="search-box" style="margin-bottom:0" placeholder="Kharid Rate / Cost (₹)">
+        <input type="number" id="newItemRate" class="search-box" style="margin-bottom:0" placeholder="Bech Rate / Sell (₹)">
+      </div>
+      <div class="action-grid-2" style="margin-bottom:10px;">
+        <input type="number" id="newItemStock" class="search-box" style="margin-bottom:0" placeholder="Opening Stock (kg/pcs)">
+        <input type="text" id="newItemCode" class="search-box" style="margin-bottom:0" placeholder="Barcode / QR Code (Opt)">
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="addNewProduct()">+ Save Product</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>Edit Sell & Cost Rates</span>
+        <span style="font-size:11px;color:var(--primary)">Auto-Saves</span>
+      </div>
+      <input type="text" class="search-box" id="rateSearchInput" placeholder="Search item to edit rate..." oninput="renderRates()">
+      <div id="rateListDisplay"></div>
+    </div>
+  </div>
+
+  <!-- PAGE 6: SETTINGS & BACKUP -->
+  <div id="page-settings" class="page">
+    <div class="card">
+      <div class="card-title"><span>Store & UPI Settings</span></div>
+      <label style="font-size:11px;color:var(--muted);font-weight:700;">Store Name & Address</label>
+      <input type="text" id="storeAddrInput" class="search-box" placeholder="Mehboob Store • New Seelampur, Delhi">
+      <label style="font-size:11px;color:var(--muted);font-weight:700;">UPI ID</label>
+      <input type="text" id="upiIdInput" class="search-box" placeholder="9520324368@okbizaxis">
+      <label style="font-size:11px;color:var(--muted);font-weight:700;">Payee Name</label>
+      <input type="text" id="payeeNameInput" class="search-box" placeholder="MOHD ANAS">
+      <button class="btn btn-primary" style="width:100%" onclick="saveSettings()">Save Store Settings</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>Full Data Backup & Restore</span></div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Copy full shop data (Rates, Stock, Udhar, Hisab) to WhatsApp/Notes so you never lose a single rupee.</p>
+      <div class="action-grid-2">
+        <button class="btn btn-primary" onclick="exportFullBackup()">Copy / Share Backup</button>
+        <button class="btn btn-outline" onclick="openRestoreModal()">Restore Backup</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>Reset Default Catalog</span></div>
+      <button class="btn btn-danger" style="width:100%" onclick="resetDefaultProducts()">Restore All 68 Default Items</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="switchTab('bill', this)"><span class="nav-icon">🧾</span>Bill</button>
+  <button class="nav-item" onclick="switchTab('stock', this)"><span class="nav-icon">📦</span>Stock</button>
+  <button class="nav-item" onclick="switchTab('hisab', this)"><span class="nav-icon">📊</span>Hisab</button>
+  <button class="nav-item" onclick="switchTab('udhar', this)"><span class="nav-icon">📒</span>Udhar</button>
+  <button class="nav-item" onclick="switchTab('rates', this)"><span class="nav-icon">🏷️</span>Rates</button>
+  <button class="nav-item" onclick="switchTab('settings', this)"><span class="nav-icon">⚙️</span>More</button>
+</div>
+
+<!-- QUANTITY / WEIGHT MODAL -->
+<div class="modal" id="weightModal">
+  <div class="modal-card">
+    <h3 id="wItemName" style="margin-bottom:4px;">Item</h3>
+    <p id="wItemRate" style="font-size:13px;color:var(--primary);font-weight:700;"></p>
+    <p id="wItemStock" style="font-size:11px;color:var(--muted);margin-top:2px;"></p>
+
+    <div id="kgOptions">
+      <div class="weight-grid">
+        <button class="btn btn-outline" onclick="selectQty(0.1, '100g')">100g</button>
+        <button class="btn btn-outline" onclick="selectQty(0.25, '250g')">250g</button>
+        <button class="btn btn-outline" onclick="selectQty(0.5, '500g')">500g</button>
+        <button class="btn btn-outline" onclick="selectQty(1, '1 kg')">1 kg</button>
+        <button class="btn btn-outline" onclick="selectQty(2, '2 kg')">2 kg</button>
+        <button class="btn btn-outline" onclick="selectQty(5, '5 kg')">5 kg</button>
+      </div>
+      <div class="custom-row" style="margin-top:8px;">
+        <input type="number" id="customGrams" placeholder="Custom grams (e.g. 150)">
+        <button class="btn-add" onclick="selectCustomGrams()">Add</button>
+      </div>
+    </div>
+
+    <div id="pktOptions" style="display:none;">
+      <div class="weight-grid">
+        <button class="btn btn-outline" onclick="selectQty(1, '1 Pkt')">1 Pkt</button>
+        <button class="btn btn-outline" onclick="selectQty(2, '2 Pkt')">2 Pkt</button>
+        <button class="btn btn-outline" onclick="selectQty(3, '3 Pkt')">3 Pkt</button>
+        <button class="btn btn-outline" onclick="selectQty(5, '5 Pkt')">5 Pkt</button>
+        <button class="btn btn-outline" onclick="selectQty(10, '10 Pkt')">10 Pkt</button>
+        <button class="btn btn-outline" onclick="selectQty(12, '12 Pkt')">12 Pkt</button>
+      </div>
+      <div class="custom-row" style="margin-top:8px;">
+        <input type="number" id="customPcs" placeholder="Custom pieces (e.g. 4)">
+        <button class="btn-add" onclick="selectCustomPcs()">Add</button>
+      </div>
+    </div>
+
+    <button class="btn btn-outline" style="width:100%;margin-top:10px;" onclick="closeModal('weightModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- CAMERA BARCODE / QR SCANNER MODAL -->
+<div class="modal" id="scannerModal">
+  <div class="modal-card">
+    <h3 style="color:var(--primary);">Scan Barcode / QR Code</h3>
+    <p style="font-size:12px;color:var(--muted);margin-top:2px;">Point camera at packet barcode or QR</p>
+    <video id="scannerVideo" playsinline autoplay muted></video>
+    <p id="scannerStatus" style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:8px;">Starting camera...</p>
+    <div class="custom-row" style="margin-bottom:8px;">
+      <input type="text" id="manualCodeInput" placeholder="Or type/paste code here...">
+      <button class="btn-add" onclick="handleScannedCode(document.getElementById('manualCodeInput').value)">OK</button>
+    </div>
+    <button class="btn btn-outline" style="width:100%;" onclick="stopScanner()">Close Scanner</button>
+  </div>
+</div>
+
+<!-- QR PAYMENT MODAL -->
+<div class="modal" id="qrModal">
+  <div class="modal-card">
+    <h3 style="color:var(--primary);margin-bottom:2px;">M-NATURAL • Scan & Pay</h3>
+    <p id="qrStoreAddr" style="font-size:11px;color:var(--muted);margin-bottom:6px;">Mehboob Store • New Seelampur, Delhi</p>
+    <p id="qrAmtText" style="font-size:24px;font-weight:900;margin-bottom:8px;">₹0</p>
+    <img id="qrImg" src="" crossorigin="anonymous" alt="UPI QR" style="width:210px;height:210px;border:1px solid var(--border);border-radius:12px;padding:6px;">
+    <p id="qrUpiLabel" style="font-size:12px;color:var(--muted);margin:8px 0;"></p>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" onclick="shareQRImage()">Send QR Image (WhatsApp)</button>
+    <button class="btn btn-outline" style="width:100%;" onclick="closeModal('qrModal')">Close</button>
+  </div>
+</div>
+
+<!-- UDHAR MODAL -->
+<div class="modal" id="udharModal">
+  <div class="modal-card">
+    <h3 style="margin-bottom:10px;">Add to Udhar Khata</h3>
+    <input type="text" id="udharCustName" class="search-box" placeholder="Customer Name">
+    <input type="tel" id="udharCustPhone" class="search-box" placeholder="Mobile Number (Optional)">
+    <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" onclick="confirmUdhar()">Save Udhar</button>
+    <button class="btn btn-outline" style="width:100%;" onclick="closeModal('udharModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- RESTORE BACKUP MODAL -->
+<div class="modal" id="restoreModal">
+  <div class="modal-card">
+    <h3 style="margin-bottom:8px;">Restore Backup Data</h3>
+    <textarea id="restoreJsonInput" class="search-box" rows="5" placeholder="Paste your M-NATURAL backup text here..."></textarea>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" onclick="performRestore()">Restore Now</button>
+    <button class="btn btn-outline" style="width:100%;" onclick="closeModal('restoreModal')">Cancel</button>
+  </div>
+</div>
+
+<script>
+  function updateLiveDate() {
+    const now = new Date();
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const formatted = `${String(now.getDate()).padStart(2, '0')} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    document.getElementById('todayDate').textContent = formatted;
+    document.getElementById('hisabDateLabel').textContent = formatted;
+  }
+  updateLiveDate();
+
+  const DEFAULT_PRODUCTS = [
+    // M-Natural Branded Packets (Pcs)
+    { name: "M-Natural Raisins (200g Pkt)", cat: "M-Natural Packets", unit: "pkt", cost: 85, rate: 115, stock: 40, code: "MN200" },
+    { name: "M-Natural Raisins (250g Pkt)", cat: "M-Natural Packets", unit: "pkt", cost: 105, rate: 140, stock: 40, code: "MN250" },
+    { name: "M-Natural Badam (250g Pkt)", cat: "M-Natural Packets", unit: "pkt", cost: 165, rate: 205, stock: 25, code: "MNB250" },
+    { name: "M-Natural Kaju (250g Pkt)", cat: "M-Natural Packets", unit: "pkt", cost: 185, rate: 225, stock: 25, code: "MNK250" },
+
+    // Dry Fruits (kg)
+    { name: "Kishmish (Raisins)", cat: "Dry Fruits", unit: "kg", cost: 430, rate: 540, stock: 15, code: "" },
+    { name: "Badam California", cat: "Dry Fruits", unit: "kg", cost: 660, rate: 780, stock: 12, code: "" },
+    { name: "Badam Gurbandi", cat: "Dry Fruits", unit: "kg", cost: 720, rate: 840, stock: 8, code: "" },
+    { name: "Kaju W320 (Cashew)", cat: "Dry Fruits", unit: "kg", cost: 740, rate: 860, stock: 10, code: "" },
+    { name: "Kaju Tukda", cat: "Dry Fruits", unit: "kg", cost: 610, rate: 720, stock: 10, code: "" },
+    { name: "Akhrot Giri (Walnut)", cat: "Dry Fruits", unit: "kg", cost: 920, rate: 1100, stock: 6, code: "" },
+    { name: "Pista Salted", cat: "Dry Fruits", unit: "kg", cost: 840, rate: 980, stock: 6, code: "" },
+    { name: "Anjeer (Dried Figs)", cat: "Dry Fruits", unit: "kg", cost: 1020, rate: 1200, stock: 5, code: "" },
+    { name: "Makhana (Fox Nuts)", cat: "Dry Fruits", unit: "kg", cost: 800, rate: 950, stock: 8, code: "" },
+    { name: "Khajoor (Dates)", cat: "Dry Fruits", unit: "kg", cost: 240, rate: 320, stock: 15, code: "" },
+    { name: "Chhuhara (Dry Dates)", cat: "Dry Fruits", unit: "kg", cost: 210, rate: 280, stock: 10, code: "" },
+    { name: "Nariyal Gola (Dry Coconut)", cat: "Dry Fruits", unit: "kg", cost: 210, rate: 260, stock: 12, code: "" },
+
+    // Dal & Pulses (kg)
+    { name: "Arhar / Toor Dal", cat: "Dal & Pulses", unit: "kg", cost: 142, rate: 165, stock: 30, code: "" },
+    { name: "Chana Dal", cat: "Dal & Pulses", unit: "kg", cost: 80, rate: 95, stock: 35, code: "" },
+    { name: "Moong Dal Dhuli", cat: "Dal & Pulses", unit: "kg", cost: 108, rate: 125, stock: 25, code: "" },
+    { name: "Moong Chilka Dal", cat: "Dal & Pulses", unit: "kg", cost: 102, rate: 118, stock: 20, code: "" },
+    { name: "Sabut Moong", cat: "Dal & Pulses", unit: "kg", cost: 98, rate: 115, stock: 20, code: "" },
+    { name: "Masoor Dal Lal", cat: "Dal & Pulses", unit: "kg", cost: 88, rate: 105, stock: 25, code: "" },
+    { name: "Kali Masoor Sabut", cat: "Dal & Pulses", unit: "kg", cost: 82, rate: 98, stock: 20, code: "" },
+    { name: "Urad Dal Dhuli", cat: "Dal & Pulses", unit: "kg", cost: 120, rate: 140, stock: 20, code: "" },
+    { name: "Urad Chilka Dal", cat: "Dal & Pulses", unit: "kg", cost: 112, rate: 130, stock: 20, code: "" },
+    { name: "Kali Urad Sabut", cat: "Dal & Pulses", unit: "kg", cost: 110, rate: 128, stock: 20, code: "" },
+    { name: "Kabuli Chana (White)", cat: "Dal & Pulses", unit: "kg", cost: 124, rate: 145, stock: 25, code: "" },
+    { name: "Kala Chana", cat: "Dal & Pulses", unit: "kg", cost: 74, rate: 88, stock: 30, code: "" },
+    { name: "Rajma Chitra", cat: "Dal & Pulses", unit: "kg", cost: 128, rate: 150, stock: 25, code: "" },
+    { name: "Rajma Red", cat: "Dal & Pulses", unit: "kg", cost: 124, rate: 145, stock: 20, code: "" },
+    { name: "Safed Matar", cat: "Dal & Pulses", unit: "kg", cost: 70, rate: 85, stock: 20, code: "" },
+    { name: "Lobia (Black Eyed)", cat: "Dal & Pulses", unit: "kg", cost: 98, rate: 115, stock: 15, code: "" },
+
+    // Atta & Rice (kg)
+    { name: "Chakki Fresh Atta", cat: "Atta & Rice", unit: "kg", cost: 33, rate: 38, stock: 80, code: "" },
+    { name: "Basmati Rice (1121)", cat: "Atta & Rice", unit: "kg", cost: 102, rate: 120, stock: 50, code: "" },
+    { name: "Basmati Tibar Rice", cat: "Atta & Rice", unit: "kg", cost: 80, rate: 95, stock: 40, code: "" },
+    { name: "Golden Sella Rice", cat: "Atta & Rice", unit: "kg", cost: 76, rate: 90, stock: 40, code: "" },
+    { name: "Parmal / Daily Rice", cat: "Atta & Rice", unit: "kg", cost: 43, rate: 52, stock: 50, code: "" },
+    { name: "Besan (Gram Flour)", cat: "Atta & Rice", unit: "kg", cost: 88, rate: 105, stock: 25, code: "" },
+    { name: "Sooji / Rava", cat: "Atta & Rice", unit: "kg", cost: 40, rate: 48, stock: 20, code: "" },
+    { name: "Maida", cat: "Atta & Rice", unit: "kg", cost: 36, rate: 44, stock: 20, code: "" },
+    { name: "Poha (Flattened Rice)", cat: "Atta & Rice", unit: "kg", cost: 46, rate: 56, stock: 15, code: "" },
+    { name: "Daliya (Broken Wheat)", cat: "Atta & Rice", unit: "kg", cost: 42, rate: 50, stock: 15, code: "" },
+
+    // Oils & Ghee
+    { name: "Mustard Oil (Sarson 1L)", cat: "Oils & Ghee", unit: "pkt", cost: 138, rate: 155, stock: 36, code: "" },
+    { name: "Refined Soyabean (1L)", cat: "Oils & Ghee", unit: "pkt", cost: 120, rate: 135, stock: 36, code: "" },
+    { name: "Refined Sunflower (1L)", cat: "Oils & Ghee", unit: "pkt", cost: 130, rate: 145, stock: 24, code: "" },
+    { name: "Desi Ghee (1L Pack)", cat: "Oils & Ghee", unit: "pkt", cost: 560, rate: 620, stock: 15, code: "" },
+    { name: "Vanaspati Ghee (1L)", cat: "Oils & Ghee", unit: "pkt", cost: 124, rate: 140, stock: 20, code: "" },
+
+    // Spices & Masala
+    { name: "Haldi Powder (Turmeric)", cat: "Spices & Masala", unit: "kg", cost: 210, rate: 260, stock: 10, code: "" },
+    { name: "Lal Mirch Powder", cat: "Spices & Masala", unit: "kg", cost: 260, rate: 320, stock: 10, code: "" },
+    { name: "Dhaniya Powder", cat: "Spices & Masala", unit: "kg", cost: 175, rate: 220, stock: 10, code: "" },
+    { name: "Jeera (Cumin Seeds)", cat: "Spices & Masala", unit: "kg", cost: 310, rate: 380, stock: 8, code: "" },
+    { name: "Kali Mirch (Black Pepper)", cat: "Spices & Masala", unit: "kg", cost: 640, rate: 760, stock: 5, code: "" },
+    { name: "Garam Masala", cat: "Spices & Masala", unit: "kg", cost: 520, rate: 640, stock: 5, code: "" },
+    { name: "Chhoti Elaichi", cat: "Spices & Masala", unit: "kg", cost: 2400, rate: 2800, stock: 2, code: "" },
+    { name: "Laung (Cloves)", cat: "Spices & Masala", unit: "kg", cost: 920, rate: 1100, stock: 3, code: "" },
+    { name: "Dalchini (Cinnamon)", cat: "Spices & Masala", unit: "kg", cost: 340, rate: 420, stock: 4, code: "" },
+
+    // Kirana & Packet Items
+    { name: "Cheeni (Sugar)", cat: "Kirana & Daily", unit: "kg", cost: 41, rate: 46, stock: 60, code: "" },
+    { name: "Gur (Jaggery)", cat: "Kirana & Daily", unit: "kg", cost: 45, rate: 55, stock: 25, code: "" },
+    { name: "Tata Namak (1kg Pkt)", cat: "Kirana & Daily", unit: "pkt", cost: 24, rate: 28, stock: 50, code: "" },
+    { name: "Sendha Namak (1kg Pkt)", cat: "Kirana & Daily", unit: "pkt", cost: 35, rate: 45, stock: 20, code: "" },
+    { name: "Chai Patti (Tea Leaves)", cat: "Kirana & Daily", unit: "kg", cost: 290, rate: 360, stock: 15, code: "" },
+    { name: "Sabudana", cat: "Kirana & Daily", unit: "kg", cost: 70, rate: 85, stock: 15, code: "" },
+    { name: "Moongfali Dana", cat: "Kirana & Daily", unit: "kg", cost: 118, rate: 140, stock: 20, code: "" },
+    { name: "Bath Soap (Pcs)", cat: "Packet & FMCG", unit: "pkt", cost: 28, rate: 35, stock: 48, code: "" },
+    { name: "Detergent Bar (Pcs)", cat: "Packet & FMCG", unit: "pkt", cost: 8, rate: 10, stock: 60, code: "" },
+    { name: "Biscuit Pack (₹10)", cat: "Packet & FMCG", unit: "pkt", cost: 8.5, rate: 10, stock: 80, code: "" },
+    { name: "Biscuit Family Pack", cat: "Packet & FMCG", unit: "pkt", cost: 25, rate: 30, stock: 40, code: "" },
+    { name: "Masala Pouch (₹10)", cat: "Packet & FMCG", unit: "pkt", cost: 8, rate: 10, stock: 100, code: "" }
+  ];
+
+  let products = JSON.parse(localStorage.getItem('mn_products_v4')) || DEFAULT_PRODUCTS;
+  let sales = JSON.parse(localStorage.getItem('mn_sales_v4')) || [];
+  let udhars = JSON.parse(localStorage.getItem('mn_udhars_v4')) || [];
+  let config = JSON.parse(localStorage.getItem('mn_config_v4')) || {
+    addr: "Mehboob Store • New Seelampur, Delhi",
+    upi: "9520324368@okbizaxis",
+    name: "MOHD ANAS"
+  };
+
+  let bill = [], activeCat = "All", selectedItem = null, stockFilter = "all";
+  let scanTarget = "bill", videoStream = null, scanInterval = null;
+
+  document.getElementById('headerSubtitle').innerText = config.addr;
+  document.getElementById('storeAddrInput').value = config.addr;
+  document.getElementById('upiIdInput').value = config.upi;
+  document.getElementById('payeeNameInput').value = config.name;
+
+  function saveAll() {
+    localStorage.setItem('mn_products_v4', JSON.stringify(products));
+    localStorage.setItem('mn_sales_v4', JSON.stringify(sales));
+    localStorage.setItem('mn_udhars_v4', JSON.stringify(udhars));
+    updateLowStockBadge();
+  }
+
+  function updateLowStockBadge() {
+    const lowCount = products.filter(p => (p.unit === 'kg' ? p.stock <= 2 : p.stock <= 5)).length;
+    document.getElementById('lowStockBadge').innerText = `${lowCount} Low`;
+  }
+
+  function renderTabs() {
+    const cats = ["All", ...new Set(products.map(p => p.cat))];
+    document.getElementById('catTabs').innerHTML = cats.map(c =>
+      `<button class="cat-pill ${c===activeCat?'active':''}" onclick="activeCat='${c}';renderTabs();renderItems();">${c}</button>`
+    ).join('');
+  }
+
+  function renderItems() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = products.filter(p =>
+      (activeCat === "All" || p.cat === activeCat) &&
+      (p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q) || (p.code && p.code.toLowerCase().includes(q)))
+    );
+    document.getElementById('itemCountBadge').innerText = filtered.length;
+    document.getElementById('itemsGrid').innerHTML = filtered.map(p => {
+      const isLow = (p.unit === 'kg' ? p.stock <= 2 : p.stock <= 5);
+      const unitLabel = p.unit === 'pkt' ? 'pkt' : 'kg';
+      return `
+      <button class="item-btn ${isLow ? 'low-stock' : ''}" onclick="openWeight(${products.indexOf(p)})">
+        <div class="item-name">${p.name}</div>
+        <div class="item-meta">
+          <span style="color:var(--muted)">${p.cat}</span>
+          <span class="stock-tag ${isLow ? 'low' : ''}">${Number(p.stock).toFixed(p.unit==='kg'?1:0)} ${unitLabel}</span>
+        </div>
+        <div class="item-price">₹${p.rate} / ${unitLabel}</div>
+      </button>`;
+    }).join('');
+    updateLowStockBadge();
+  }
+
+  function openWeight(idx) {
+    selectedItem = products[idx];
+    const isPkt = selectedItem.unit === 'pkt';
+    document.getElementById('wItemName').innerText = selectedItem.name;
+    document.getElementById('wItemRate').innerText = `₹${selectedItem.rate} / ${isPkt ? 'packet' : 'kg'}`;
+    document.getElementById('wItemStock').innerText = `Available Stock: ${selectedItem.stock} ${isPkt ? 'pcs' : 'kg'}`;
+    document.getElementById('kgOptions').style.display = isPkt ? 'none' : 'block';
+    document.getElementById('pktOptions').style.display = isPkt ? 'block' : 'none';
+    document.getElementById('customGrams').value = "";
+    document.getElementById('customPcs').value = "";
+    document.getElementById('weightModal').classList.add('open');
+  }
+
+  function selectQty(qty, label) {
+    const isReturn = document.getElementById('returnModeCheck').checked;
+    const sign = isReturn ? -1 : 1;
+    const amt = Math.round(selectedItem.rate * qty) * sign;
+    const profit = Math.round((selectedItem.rate - (selectedItem.cost || selectedItem.rate * 0.85)) * qty) * sign;
+    bill.push({
+      prodIdx: products.indexOf(selectedItem),
+      name: `${isReturn ? '[RETURN] ' : ''}${selectedItem.name} (${label})`,
+      qty: qty * sign,
+      amt,
+      profit
+    });
+    document.getElementById('returnModeCheck').checked = false;
+    closeModal('weightModal');
+    renderBill();
+  }
+
+  function selectCustomGrams() {
+    const g = parseFloat(document.getElementById('customGrams').value);
+    if (!g || g <= 0) return;
+    selectQty(g / 1000, `${g}g`);
+  }
+
+  function selectCustomPcs() {
+    const pcs = parseFloat(document.getElementById('customPcs').value);
+    if (!pcs || pcs <= 0) return;
+    selectQty(pcs, `${pcs} Pkt`);
+  }
+
+  function addCustomAmt() {
+    const val = parseFloat(document.getElementById('customAmt').value);
+    if (!val || val <= 0) return;
+    const isReturn = document.getElementById('returnModeCheck').checked;
+    const sign = isReturn ? -1 : 1;
+    const amt = Math.round(val) * sign;
+    bill.push({
+      prodIdx: -1,
+      name: isReturn ? "[RETURN] Custom Item" : "Custom Item",
+      qty: 0,
+      amt,
+      profit: Math.round(amt * 0.15)
+    });
+    document.getElementById('customAmt').value = "";
+    document.getElementById('returnModeCheck').checked = false;
+    renderBill();
+  }
+
+  function renderBill() {
+    const list = document.getElementById('billList');
+    if (!bill.length) {
+      list.innerHTML = `<p style="text-align:center;color:var(--muted);font-size:13px;padding:10px 0;">No items added yet</p>`;
+      document.getElementById('grandTotal').innerText = "₹0";
+      return;
+    }
+    list.innerHTML = bill.map((b, i) => `
+      <div class="bill-row">
+        <span>${b.name}</span>
+        <span><b style="color:${b.amt<0?'var(--danger)':'inherit'}">₹${b.amt}</b> <button onclick="bill.splice(${i},1);renderBill()" style="margin-left:8px;border:none;background:none;color:#dc2626;font-weight:bold;font-size:15px;">✕</button></span>
+      </div>`).join('');
+    document.getElementById('grandTotal').innerText = "₹" + getTotal();
+  }
+
+  function getTotal() { return bill.reduce((s, b) => s + b.amt, 0); }
+  function getProfit() { return bill.reduce((s, b) => s + (b.profit || 0), 0); }
+  function clearBill() { bill = []; renderBill(); }
+
+  function deductStockFromBill() {
+    bill.forEach(b => {
+      if (b.prodIdx >= 0 && products[b.prodIdx]) {
+        products[b.prodIdx].stock = Math.max(0, Number((products[b.prodIdx].stock - b.qty).toFixed(3)));
+      }
+    });
+  }
+
+  function saveSale(mode) {
+    const total = getTotal();
+    if (!bill.length) return alert("Bill is empty.");
+    const itemSummary = bill.map(b => `${b.name} ₹${b.amt}`).join(', ');
+    deductStockFromBill();
+    sales.unshift({
+      mode: total < 0 ? 'Return' : mode,
+      total,
+      profit: getProfit(),
+      items: itemSummary,
+      date: document.getElementById('todayDate').textContent,
+      time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+    });
+    saveAll();
+    clearBill();
+    renderItems();
+    alert(`Saved ₹${total} (${mode}) & Stock Updated!`);
+  }
+
+  function openUdharModal() {
+    if (!bill.length || getTotal() <= 0) return alert("Add items to bill first.");
+    document.getElementById('udharModal').classList.add('open');
+  }
+
+  function confirmUdhar() {
+    const name = document.getElementById('udharCustName').value.trim();
+    const phone = document.getElementById('udharCustPhone').value.trim();
+    if (!name) return alert("Enter customer name");
+    const total = getTotal();
+    const itemSummary = bill.map(b => `${b.name} ₹${b.amt}`).join(', ');
+    const todayStr = document.getElementById('todayDate').textContent;
+    deductStockFromBill();
+    udhars.unshift({ name, phone, total, items: itemSummary, date: todayStr });
+    sales.unshift({ mode: 'Udhar', total, profit: getProfit(), items: `${name}: ${itemSummary}`, date: todayStr, time: name });
+    saveAll();
+    document.getElementById('udharCustName').value = "";
+    document.getElementById('udharCustPhone').value = "";
+    closeModal('udharModal');
+    clearBill();
+    renderItems();
+    alert(`Added ₹${total} to ${name}'s Udhar!`);
+  }
+
+  // STOCK TAB
+  function setStockFilter(f) {
+    stockFilter = f;
+    document.getElementById('stkFilterAll').classList.toggle('active', f === 'all');
+    document.getElementById('stkFilterLow').classList.toggle('active', f === 'low');
+    renderStock();
+  }
+
+  function addStockQty(idx, addAmt) {
+    products[idx].stock = Number((Number(products[idx].stock) + addAmt).toFixed(3));
+    saveAll();
+    renderStock();
+    renderItems();
+  }
+
+  function renderStock() {
+    const q = (document.getElementById('stockSearchInput')?.value || '').toLowerCase();
+    const list = products.filter(p => {
+      const isLow = (p.unit === 'kg' ? p.stock <= 2 : p.stock <= 5);
+      if (stockFilter === 'low' && !isLow) return false;
+      return p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q);
+    });
+    document.getElementById('stockListDisplay').innerHTML = list.length ? list.map(p => {
+      const idx = products.indexOf(p);
+      const isLow = (p.unit === 'kg' ? p.stock <= 2 : p.stock <= 5);
+      const u = p.unit === 'pkt' ? 'pcs' : 'kg';
+      const step1 = p.unit === 'pkt' ? 10 : 5;
+      const step2 = p.unit === 'pkt' ? 25 : 25;
+      return `
+      <div class="stock-row">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;">${p.name}</div>
+          <span class="stock-tag ${isLow?'low':''}">${isLow?'⚠️ Low: ':'In Stock: '}${Number(p.stock).toFixed(p.unit==='kg'?1:0)} ${u}</span>
+        </div>
+        <div style="display:flex;gap:5px;">
+          <button class="mini-btn" onclick="addStockQty(${idx}, ${step1})">+${step1}${u}</button>
+          <button class="mini-btn" onclick="addStockQty(${idx}, ${step2})">+${step2}${u}</button>
+        </div>
+      </div>`;
+    }).join('') : `<p style="color:var(--muted);font-size:13px;padding:10px 0;">No items in this view.</p>`;
+  }
+
+  // HISAB TAB
+  function renderHisab() {
+    let tot=0, prof=0, cash=0, upi=0;
+    sales.forEach(s => {
+      tot += s.total;
+      prof += (s.profit || 0);
+      if(s.mode==='Cash') cash += s.total;
+      if(s.mode==='UPI') upi += s.total;
+    });
+    document.getElementById('statTotal').innerText = `₹${tot}`;
+    document.getElementById('statProfit').innerText = `₹${prof}`;
+    document.getElementById('statCash').innerText = `₹${cash}`;
+    document.getElementById('statUpi').innerText = `₹${upi}`;
+    document.getElementById('txLog').innerHTML = sales.length
+      ? sales.map(s => `
+        <div class="tx-card">
+          <div class="tx-head">
+            <span><span class="badge-mode badge-${s.mode}">${s.mode}</span> • ${s.time} (${s.date})</span>
+            <span>₹${s.total}</span>
+          </div>
+          <div class="tx-items">${s.items || 'Direct bill'}</div>
+        </div>`).join('')
+      : `<p style="color:var(--muted);font-size:13px;">No bills recorded yet.</p>`;
+  }
+
+  // UDHAR TAB
+  function renderUdhar() {
+    const totalU = udhars.reduce((s, u) => s + u.total, 0);
+    document.getElementById('totalUdharTop').innerText = `Total: ₹${totalU}`;
+    document.getElementById('udharList').innerHTML = udhars.length
+      ? udhars.map((u, i) => `
+        <div class="tx-card">
+          <div class="tx-head">
+            <span><b>${u.name}</b> ${u.phone ? '('+u.phone+')' : ''}</span>
+            <span style="color:var(--danger)">₹${u.total}</span>
+          </div>
+          <div class="tx-items" style="margin-bottom:6px;">${u.date} • ${u.items || ''}</div>
+          <div style="display:flex;gap:6px;">
+            <button class="mini-btn" onclick="partialUdhar(${i})">Jama / Partial</button>
+            <button class="mini-btn" style="background:#dcfce7;color:#166534;border-color:#86efac;" onclick="markUdharPaid(${i})">Full Paid ✓</button>
+          </div>
+        </div>`).join('')
+      : `<p style="color:var(--muted);font-size:13px;">No pending udhar records.</p>`;
+  }
+
+  function partialUdhar(idx) {
+    const paid = parseFloat(prompt(`Enter amount received from ${udhars[idx].name} (Pending: ₹${udhars[idx].total}):`));
+    if (!paid || paid <= 0) return;
+    if (paid >= udhars[idx].total) {
+      markUdharPaid(idx);
+    } else {
+      udhars[idx].total -= Math.round(paid);
+      saveAll();
+      renderUdhar();
+    }
+  }
+
+  function markUdharPaid(idx) {
+    udhars.splice(idx, 1);
+    saveAll();
+    renderUdhar();
+  }
+
+  // RATES TAB
+  function addNewProduct() {
+    const name = document.getElementById('newItemName').value.trim();
+    const unit = document.getElementById('newItemUnit').value;
+    const cat = document.getElementById('newItemCat').value.trim() || (unit==='pkt' ? "Packet & FMCG" : "Kirana & Daily");
+    const cost = parseFloat(document.getElementById('newItemCost').value) || 0;
+    const rate = parseFloat(document.getElementById('newItemRate').value);
+    const stock = parseFloat(document.getElementById('newItemStock').value) || 10;
+    const code = document.getElementById('newItemCode').value.trim();
+    if (!name || !rate) return alert("Enter item name and sell rate");
+    products.unshift({ name, cat, unit, cost: cost || Math.round(rate*0.85), rate, stock, code });
+    saveAll();
+    ['newItemName','newItemCat','newItemCost','newItemRate','newItemStock','newItemCode'].forEach(id => document.getElementById(id).value = "");
+    renderTabs(); renderItems(); renderRates();
+    alert("Product Added!");
+  }
+
+  function updateInlineRate(idx, field, val) {
+    const num = parseFloat(val);
+    if (num >= 0) {
+      products[idx][field] = num;
+      saveAll();
+      renderItems();
+    }
+  }
+
+  function renderRates() {
+    const q = (document.getElementById('rateSearchInput')?.value || '').toLowerCase();
+    document.getElementById('rateListDisplay').innerHTML = products
+      .filter(p => p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q))
+      .map(p => {
+        const idx = products.indexOf(p);
+        return `
+        <div class="stock-row">
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;">${p.name}</div>
+            <small style="color:var(--muted)">Cost: ₹<input type="number" class="rate-input-inline" style="width:55px;padding:2px 4px;" value="${p.cost||0}" onchange="updateInlineRate(${idx},'cost',this.value)"></small>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:12px;font-weight:700;">Sell ₹</span>
+            <input type="number" class="rate-input-inline" value="${p.rate}" onchange="updateInlineRate(${idx},'rate',this.value)">
+            <button onclick="if(confirm('Delete item?')){products.splice(${idx},1);saveAll();renderTabs();renderItems();renderRates();}" style="border:none;background:none;color:#dc2626;font-size:15px;">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+  }
+
+  // QR & WHATSAPP
+  function openQRModal() {
+    const total = getTotal();
+    if (total <= 0) return alert("Add items to bill first.");
+    const upiUrl = `upi://pay?pa=${encodeURIComponent(config.upi)}&pn=${encodeURIComponent(config.name)}&am=${total}&cu=INR`;
+    document.getElementById('qrStoreAddr').innerText = config.addr;
+    document.getElementById('qrAmtText').innerText = `₹${total}`;
+    document.getElementById('qrUpiLabel').innerText = `UPI: ${config.upi} (${config.name})`;
+    document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+    document.getElementById('qrModal').classList.add('open');
+  }
+
+  async function shareQRImage() {
+    const imgUrl = document.getElementById('qrImg').src;
+    try {
+      const res = await fetch(imgUrl);
+      const blob = await res.blob();
+      const file = new File([blob], "M-NATURAL-QR.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "M-NATURAL QR", text: `M-NATURAL (${config.addr})
+Pay ₹${getTotal()} via UPI: ${config.upi}` });
+      } else { window.open(imgUrl, '_blank'); }
+    } catch (e) { window.open(imgUrl, '_blank'); }
+  }
+
+  function shareWhatsApp() {
+    const total = getTotal();
+    if (!bill.length) return alert("Bill is empty.");
+    const d = document.getElementById('todayDate').textContent;
+    const lines = bill.map(b => `• ${b.name}: ₹${b.amt}`).join('%0A');
+    const msg = `*M-NATURAL RECEIPT*%0A_${config.addr}_%0ADate: ${d}%0A%0A${lines}%0A%0A*Total Payable: ₹${total}*%0AUPI: ${config.upi}%0AThank you for shopping!`;
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
+  }
+
+  function shareHisabWhatsApp() {
+    let tot=0, prof=0, cash=0, upi=0;
+    sales.forEach(s => { tot+=s.total; prof+=(s.profit||0); if(s.mode==='Cash') cash+=s.total; if(s.mode==='UPI') upi+=s.total; });
+    const d = document.getElementById('todayDate').textContent;
+    const msg = `*M-NATURAL Hisab (${d})*%0ATotal Sales: ₹${tot}%0ANet Profit: ₹${prof}%0ACash: ₹${cash}%0AUPI: ₹${upi}`;
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
+  }
+
+  // CAMERA BARCODE / QR SCANNER
+  async function openScanner(target) {
+    scanTarget = target;
+    document.getElementById('manualCodeInput').value = "";
+    document.getElementById('scannerModal').classList.add('open');
+    const statusEl = document.getElementById('scannerStatus');
+    statusEl.innerText = "Opening camera...";
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      const video = document.getElementById('scannerVideo');
+      video.srcObject = videoStream;
+      if ('BarcodeDetector' in window) {
+        statusEl.innerText = "Scanning... Point at Barcode or QR";
+        const detector = new BarcodeDetector({ formats: ['qr_code', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] });
+        scanInterval = setInterval(async () => {
+          try {
+            const codes = await detector.detect(video);
+            if (codes.length > 0) {
+              handleScannedCode(codes[0].rawValue);
+            }
+          } catch (e) {}
+        }, 400);
+      } else {
+        statusEl.innerText = "Live camera active. Type code below if auto-detect isn't supported.";
+      }
+    } catch (err) {
+      statusEl.innerText = "Camera permission blocked. Enter code manually below.";
+    }
+  }
+
+  function handleScannedCode(code) {
+    code = (code || '').trim();
+    if (!code) return;
+    stopScanner();
+    if (scanTarget === 'new') {
+      document.getElementById('newItemCode').value = code;
+      alert("Barcode/QR captured: " + code);
+    } else {
+      const idx = products.findIndex(p => p.code && p.code.toLowerCase() === code.toLowerCase());
+      if (idx >= 0) {
+        openWeight(idx);
+      } else {
+        document.getElementById('searchInput').value = code;
+        renderItems();
+        alert(`Code "${code}" not linked to any product yet. Add it in Rates tab!`);
+      }
+    }
+  }
+
+  function stopScanner() {
+    if (scanInterval) clearInterval(scanInterval);
+    if (videoStream) {
+      videoStream.getTracks().forEach(t => t.stop());
+      videoStream = null;
+    }
+    closeModal('scannerModal');
+  }
+
+  // BACKUP & SETTINGS
+  function exportFullBackup() {
+    const data = JSON.stringify({ products, sales, udhars, config });
+    if (navigator.share) {
+      navigator.share({ title: "M-NATURAL Full Backup", text: data }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(data);
+      alert("Full backup copied to clipboard! Paste it in WhatsApp to save.");
+    }
+  }
+
+  function openRestoreModal() {
+    document.getElementById('restoreJsonInput').value = "";
+    document.getElementById('restoreModal').classList.add('open');
+  }
+
+  function performRestore() {
+    try {
+      const parsed = JSON.parse(document.getElementById('restoreJsonInput').value.trim());
+      if (parsed.products) products = parsed.products;
+      if (parsed.sales) sales = parsed.sales;
+      if (parsed.udhars) udhars = parsed.udhars;
+      if (parsed.config) config = parsed.config;
+      saveAll();
+      localStorage.setItem('mn_config_v4', JSON.stringify(config));
+      closeModal('restoreModal');
+      renderTabs(); renderItems();
+      alert("All Shop Data Restored Successfully!");
+    } catch (e) {
+      alert("Invalid backup text. Please paste exact backup code.");
+    }
+  }
+
+  function saveSettings() {
+    config.addr = document.getElementById('storeAddrInput').value.trim() || "Mehboob Store • New Seelampur, Delhi";
+    config.upi = document.getElementById('upiIdInput').value.trim();
+    config.name = document.getElementById('payeeNameInput').value.trim();
+    localStorage.setItem('mn_config_v4', JSON.stringify(config));
+    document.getElementById('headerSubtitle').innerText = config.addr;
+    alert("Store & UPI Settings Saved!");
+  }
+
+  function resetDefaultProducts() {
+    if (!confirm("Restore all 68 default items and stock?")) return;
+    products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+    saveAll();
+    renderTabs(); renderItems(); renderRates();
+    alert("68 Items Restored!");
+  }
+
+  function switchTab(tab, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + tab).classList.add('active');
+    el.classList.add('active');
+    if (tab === 'stock') renderStock();
+    if (tab === 'hisab') renderHisab();
+    if (tab === 'udhar') renderUdhar();
+    if (tab === 'rates') renderRates();
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  renderTabs();
+  renderItems();
+</script>
+</body>
+</html>
